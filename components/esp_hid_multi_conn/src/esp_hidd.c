@@ -178,6 +178,22 @@ esp_err_t esp_hidd_dev_prev_client(esp_hidd_dev_t *dev)
     return dev->prev_client(dev->dev);
 }
 
+esp_err_t esp_hidd_dev_switch_next_client(esp_hidd_dev_t *dev)
+{
+    if (dev == NULL) {
+        return ESP_FAIL;
+    }
+    return dev->switch_next_client(dev->dev);
+}
+
+esp_err_t esp_hidd_dev_switch_prev_client(esp_hidd_dev_t *dev)
+{
+    if (dev == NULL) {
+        return ESP_FAIL;
+    }
+    return dev->switch_prev_client(dev->dev);
+}
+
 esp_err_t esp_hidd_dev_select_client(esp_hidd_dev_t *dev, int idx)
 {
     if (dev == NULL) {

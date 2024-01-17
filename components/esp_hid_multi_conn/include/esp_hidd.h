@@ -224,6 +224,8 @@ esp_err_t esp_hidd_dev_event_handler_unregister(esp_hidd_dev_t *dev, esp_event_h
 
 esp_err_t esp_hidd_dev_next_client(esp_hidd_dev_t *dev);
 esp_err_t esp_hidd_dev_prev_client(esp_hidd_dev_t *dev);
+esp_err_t esp_hidd_dev_switch_next_client(esp_hidd_dev_t *dev);
+esp_err_t esp_hidd_dev_switch_prev_client(esp_hidd_dev_t *dev);
 esp_err_t esp_hidd_dev_select_client(esp_hidd_dev_t *dev, int idx);
 
 

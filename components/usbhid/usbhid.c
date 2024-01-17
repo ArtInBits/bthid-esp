@@ -190,7 +190,7 @@ void hid_host_device_event(hid_host_device_handle_t hid_device_handle,
         }
         report_desc[i].buf = hid_host_get_report_descriptor(hid_device_handle, &report_desc[i].len);
         PINFO("Yanir: report desc len = %u", report_desc[i].len);
-        HEXDUMP(report_desc[i].buf, report_desc[i].len);
+        //HEXDUMP(report_desc[i].buf, report_desc[i].len);
         ESP_ERROR_CHECK( hid_host_device_start(hid_device_handle) );
         break;
     default:

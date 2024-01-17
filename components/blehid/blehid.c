@@ -39,6 +39,16 @@ static void blehid_prev_cli(esp_hidd_dev_t *dev)
     esp_hidd_dev_prev_client(dev);
 }
 
+static void blehid_switch_next_cli(esp_hidd_dev_t *dev)
+{
+    esp_hidd_dev_switch_next_client(dev);
+}
+
+static void blehid_switch_prev_cli(esp_hidd_dev_t *dev)
+{
+    esp_hidd_dev_switch_prev_client(dev);
+}
+
 static void blehid_select_cli(esp_hidd_dev_t *dev, int idx)
 {
     esp_hidd_dev_select_client(dev, idx);
@@ -58,10 +68,21 @@ static int filter_hotkey(hid_report_t *report)
             return 1;
         //send an empty keyboard before switching
         esp_hidd_dev_input_set(s_hid_dev, 0, report->data[0],report->data+1, report->len-1);
-        if (s_state == 1) {
-            blehid_next_cli(s_hid_dev);
-        } else {
-            blehid_prev_cli(s_hid_dev);
+        switch (s_state) {
+            case -1:
+                blehid_prev_cli(s_hid_dev);
+                break;
+            case 1:
+                blehid_next_cli(s_hid_dev);
+                break;
+            case -2:
+                blehid_switch_prev_cli(s_hid_dev);
+                break;
+            case 2:
+                blehid_switch_next_cli(s_hid_dev);
+                break;
+            default:
+                break;
         }
         s_state = 0;
         return 1;
@@ -75,6 +96,12 @@ static int filter_hotkey(hid_report_t *report)
                 break;
             case 0x4f: //->
                 s_state = 1;
+                break;
+            case 0x51: //down - switch place with the previous node
+                s_state = -2;
+                break;
+            case 0x52: //up - switch place with the next node
+                s_state = 2;
                 break;
             case 0: //that is when we leave a key
                 break;
@@ -90,7 +117,7 @@ static int filter_hotkey(hid_report_t *report)
 static void hid_input_handler(hid_report_t *report)
 {
     esp_err_t ret;
-    HEXDUMP(report->data, report->len);
+//    HEXDUMP(report->data, report->len);
     switch(report->data[0] ) {
         case 1:
             if (0 != filter_hotkey(report))
@@ -130,12 +157,12 @@ static void ble_hidd_event_callback(void *handler_args, esp_event_base_t base, i
     }
     case ESP_HIDD_OUTPUT_EVENT: {
         PINFO("OUTPUT[%u]: %8s ID: %2u, Len: %d, Data:", param->output.map_index, esp_hid_usage_str(param->output.usage), param->output.report_id, param->output.length);
-        HEXDUMP(param->output.data, param->output.length);
+//        HEXDUMP(param->output.data, param->output.length);
         break;
     }
     case ESP_HIDD_FEATURE_EVENT: {
         PINFO("FEATURE[%u]: %8s ID: %2u, Len: %d, Data:", param->feature.map_index, esp_hid_usage_str(param->feature.usage), param->feature.report_id, param->feature.length);
-        HEXDUMP(param->feature.data, param->feature.length);
+//        HEXDUMP(param->feature.data, param->feature.length);
         break;
     }
     case ESP_HIDD_DISCONNECT_EVENT: {

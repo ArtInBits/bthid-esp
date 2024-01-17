@@ -61,6 +61,8 @@ struct esp_hidd_dev_s {
     esp_err_t   (*event_handler_unregister) (void *dev, esp_event_handler_t callback, esp_hidd_event_t event);
     esp_err_t   (*next_client) (void *dev);
     esp_err_t   (*prev_client) (void *dev);
+    esp_err_t   (*switch_next_client) (void *dev);
+    esp_err_t   (*switch_prev_client) (void *dev);
     esp_err_t   (*select_client) (void *dev, int idx);
 };
 

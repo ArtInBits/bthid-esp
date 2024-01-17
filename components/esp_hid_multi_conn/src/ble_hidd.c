@@ -183,6 +183,8 @@ void del_client(hidd_client_t *cli);
 hidd_client_t *get_client(hidd_client_t * list, esp_bd_addr_t remote_bda);
 static esp_err_t esp_ble_hidd_next_client(void *devp);
 static esp_err_t esp_ble_hidd_prev_client(void *devp);
+static esp_err_t esp_ble_hidd_switch_next_client(void *devp);
+static esp_err_t esp_ble_hidd_switch_prev_client(void *devp);
 
 void print_the_report_map(char *prefix, esp_hid_report_map_t *r)
 {
@@ -1045,6 +1047,37 @@ static esp_err_t esp_ble_hidd_prev_client(void *devp)
     return ESP_OK;
 }
 
+//add to the end of the list
+static inline void __rm_node(hidd_client_t *cli)
+{
+    cli->next->prev = cli->prev;
+    cli->prev->next = cli->next;
+}
+
+static esp_err_t esp_ble_hidd_switch_next_client(void *devp)
+{
+    esp_ble_hidd_dev_t *dev = (esp_ble_hidd_dev_t *)devp;
+    hidd_client_t *other = dev->active_client->next;
+    if (other == &dev->clients) {
+        other = other->next;
+    }
+    __rm_node(dev->active_client);
+    add_client(other->next, dev->active_client);
+    return ESP_OK;
+}
+
+static esp_err_t esp_ble_hidd_switch_prev_client(void *devp)
+{
+    esp_ble_hidd_dev_t *dev = (esp_ble_hidd_dev_t *)devp;
+    hidd_client_t *other = dev->active_client->prev;
+    if (other == &dev->clients) {
+        other = other->prev;
+    }
+    __rm_node(dev->active_client);
+    add_client(other, dev->active_client);
+    return ESP_OK;
+}
+
 static esp_err_t esp_ble_hidd_select_client(void *devp, int idx)
 {
 #warning "not yet implemented. requires persistent numbering and interface to manipulate them"
@@ -1064,8 +1097,7 @@ void add_client(hidd_client_t *list, hidd_client_t *cli)
 //add to the end of the list
 void del_client(hidd_client_t *cli)
 {
-    cli->next->prev = cli->prev;
-    cli->prev->next = cli->next;
+    __rm_node(cli);
     free(cli);
 }
 
@@ -1154,6 +1186,8 @@ esp_err_t esp_ble_hidd_dev_init(esp_hidd_dev_t *dev_p, const esp_hid_device_conf
     dev_p->event_handler_unregister = esp_ble_hidd_dev_event_handler_unregister;
     dev_p->next_client = esp_ble_hidd_next_client;
     dev_p->prev_client = esp_ble_hidd_prev_client;
+    dev_p->switch_next_client = esp_ble_hidd_switch_next_client;
+    dev_p->switch_prev_client = esp_ble_hidd_switch_prev_client;
     dev_p->select_client = esp_ble_hidd_select_client;
 
     ret = esp_ble_hidd_dev_event_handler_register(s_dev, esp_hidd_process_event_data_handler, ESP_EVENT_ANY_ID);
